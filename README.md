@@ -1,5 +1,14 @@
 # node-red-GPS-monitor
 
+Revision 2.2
+
+Separated GPS status button display message processing entirely from bar chart message processing to avoid any issues with msg.topic definition
+Fixed some improperly declared variables in the function node javascript that later versions of node.js complained about.
+Fixed a missing set of square brackets for bar chart "series" (that element has to be passed as array) that later versions of node.js complained about.
+
+
+Initial Release
+
 Node-RED flow to monitor the serial port NMEA output of a GNSS receiver
 and show fix state, UTC time, and a chart of satellite signal to noise (SNR) values.
 
