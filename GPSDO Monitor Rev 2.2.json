@@ -1,0 +1,284 @@
+[
+    {
+        "id": "c9354f75fb3adeea",
+        "type": "tab",
+        "label": "GPSDO Monitor Rev 2.2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "89b952f3b801aa0c",
+        "type": "switch",
+        "z": "c9354f75fb3adeea",
+        "name": "Separate NMEA Sentences",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "cont",
+                "v": "GSA",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "GGA",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "GSV",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "GLL",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "RMC",
+                "vt": "str"
+            },
+            {
+                "t": "cont",
+                "v": "VTG",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 6,
+        "x": 460,
+        "y": 240,
+        "wires": [
+            [
+                "33c95b8c881b7434",
+                "e66266516163c02e"
+            ],
+            [
+                "f6d82f9deb347003"
+            ],
+            [
+                "ad5511a7366f1579"
+            ],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "f6d82f9deb347003",
+        "type": "function",
+        "z": "c9354f75fb3adeea",
+        "name": "Parse GGA sentence for UTC Time",
+        "func": "var str = msg.payload;\n\n//remove checksum at end that starts with asterisk\n\nvar chunks = str.split(\"*\");\n\n//take first part and then split into NMEA string parameters\n\nvar parts = chunks[0].split(\",\");\n\n//split time hhmmss and fractional seconds\n\nvar time = parts[1].split(\".\");\n\nvar utcTime = time[0];\n\nmsg.payload = \"UTC: \" + utcTime;\n\nreturn msg;\n\n/*For reference as follows\n\nmsg.payload = {\n  identifier: parts[0],\n  time: parts[1],\n  latitude: parts[2],\n  latHemi: parts[3],\n  longitude: parts[4],\n  lonHemi: parts[5],\n  gpsQual: parts[6],\n  numSats: parts[7],\n  hdop: parts[8],\n  altitude: parts[9],\n  altUnit: parts[10],\n  geoidalSep: parts[11],\n  geoidalSepUnit: parts[12],\n  diffDataAge: parts[13],\n  diffStation: parts[14],\n  }\n  */",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 220,
+        "wires": [
+            [
+                "6d9494fb88d03957"
+            ]
+        ]
+    },
+    {
+        "id": "3c12b911fcb953c8",
+        "type": "ui_chart",
+        "z": "c9354f75fb3adeea",
+        "name": "GPS SVID SNR Bar Chart",
+        "group": "d1f18380c9713791",
+        "order": 5,
+        "width": 7,
+        "height": 4,
+        "label": "",
+        "chartType": "bar",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "NO DATA",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "60",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": true,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1310,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "33c95b8c881b7434",
+        "type": "function",
+        "z": "c9354f75fb3adeea",
+        "name": "Parse GSA sentence for GPS Status",
+        "func": "var str = msg.payload;\n\n//remove checksum at end that starts with asterisk\n\nvar chunks = str.split(\"*\");\n\n//take first part and then split into NMEA string parameters\n\nvar parts = chunks[0].split(\",\");\n\n//parse part[2], which is GPS Fix Mode, and set button state\n//accordingly to show status\n\nif (parts[2]==1) msg.label = \"<font color=black>GPSDO: NO FIX\",\n                 msg.background = \"red\";\nelse if (parts[2]==2) msg.label =\"<font color=black>GPSDO: 2D FIX\",\n                      msg.background = \"yellow\";\nelse if (parts[2]==3) msg.label =\"<font color=white>GPSDO: 3D FIX\",\n                      msg.background = \"green\";\n\nreturn msg;\n\n/* for reference as follows\n\nmsg.payload = {\n  identifier: parts[0],\n  autoMan: parts[1],\n  fixMode: parts[2],\n  svid1: parts[3],\n  svid2: parts[4],\n  svid3: parts[5],\n  svid4: parts[6],\n  svid5: parts[7],\n  svid6: parts[8],\n  svid7: parts[9],\n  svid8: parts[10],\n  svid9: parts[11],\n  svid10: parts[12],\n  svid11: parts[13],\n  svid12: parts[14],\n  pdop: parts[15],\n  hdop: parts[16],\n  vdop: parts[17]\n  }\n  */",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 160,
+        "wires": [
+            [
+                "1994c4bb349f28f3"
+            ]
+        ]
+    },
+    {
+        "id": "1994c4bb349f28f3",
+        "type": "ui_button",
+        "z": "c9354f75fb3adeea",
+        "name": "GPS Status",
+        "group": "d1f18380c9713791",
+        "order": 1,
+        "width": 7,
+        "height": 1,
+        "passthru": false,
+        "label": "{{msg.label}}",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "{{msg.background}}",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 1270,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ad5511a7366f1579",
+        "type": "function",
+        "z": "c9354f75fb3adeea",
+        "name": "Parse GSV sentence for SV SNR data, store in flow variable",
+        "func": "//this parsing routine develops a list of satellites and their \n//associated SNR values for display on a chart, the chart being\n//developed in the GSA message parsing function\n\nvar str = msg.payload;\n\n//remove checksum at end that starts with asterisk\n\nvar chunks = str.split(\"*\");\n\n//take first part and then split into NMEA string parameters\n\nvar parts = chunks[0].split(\",\");\n\n//retrieve the existing state of the flow variables\n\nlet svLabel = flow.get(\"svLabel\") || [];\nlet svSNRdata = flow.get(\"svSNRdata\") || [];\n\n//get all four possible parts of each GSV sentence and assign the\n//sv number and associated SNR to a label array (which is a little\n//redundant) and an SNR array, both indexed by SV number.\n//null or undefined values will go into array index [0], and that\n//index will be ignored by subsequent processing.\n\nfor (let i=0; i<=3; i++) {\n    var sv = parseInt(parts[4+4*i] || 0);\n    var snr = parseInt(parts[7+4*i] || 0);\n    svLabel[sv] = sv;\n    svSNRdata[sv] = snr;\n}\n\n//update the state of the flow variables\n\nflow.set(\"svLabel\", svLabel);\nflow.set(\"svSNRdata\", svSNRdata);\n\nreturn;\n\n\n/* for reference as follows\n\nmsg.payload = {\n  identifier: parts[0],\n  numMSGs: parts[1],\n  msgNum: parts[2],\n  totalSVs: parts[3],\n  firstSVprn: parts[4],\n  firstSVelev: parts[5],\n  firstSVazim: parts[6],\n  firstSVsnr: parts[7],\n  secondSVprn: parts[8],\n  secondSVelev: parts[9],\n  secondSVazim: parts[10],\n  secondSVsnr: parts[11],\n  thirdSVprn: parts[12],\n  thirdSVelev: parts[13],\n  thirdSVazim: parts[14],\n  thirdSVsnr: parts[15],\n  fourthSVprn: parts[16],\n  fourthSVelev: parts[17],\n  fourthSVazim: parts[18],\n  fourthSVsnr: parts[19],\n  }\n  */",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 900,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6d9494fb88d03957",
+        "type": "ui_text",
+        "z": "c9354f75fb3adeea",
+        "group": "d1f18380c9713791",
+        "order": 3,
+        "width": 5,
+        "height": 1,
+        "name": "Display UTC Time",
+        "label": "",
+        "format": "<font size=1,font color=lightblue>{{msg.payload}}",
+        "layout": "col-center",
+        "className": "",
+        "x": 1290,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "c88de8462b58b0f8",
+        "type": "serial in",
+        "z": "c9354f75fb3adeea",
+        "name": "GPSDO NMEA Output",
+        "serial": "260fa66d78fbe2c2",
+        "x": 190,
+        "y": 240,
+        "wires": [
+            [
+                "89b952f3b801aa0c"
+            ]
+        ]
+    },
+    {
+        "id": "e66266516163c02e",
+        "type": "function",
+        "z": "c9354f75fb3adeea",
+        "name": "Parse GSA sentence for SV List, add SNR from GSV & form chart",
+        "func": "var str = msg.payload;\n\n//remove checksum at end that starts with asterisk\n\nvar chunks = str.split(\"*\");\n\n//take first part and then split into NMEA string parameters\n\nvar parts = chunks[0].split(\",\");\n\nlet svSNRdata = flow.get(\"svSNRdata\");\n\n//build the arrays for the GPS status bar chart\n//get all 12 parts of each GSA sentence that list the SVIDs in use\n//and place them into an array\n//get the matching SNR data for each SVID and place that into \n//a matching array\n//null or undefined values become 0\n\nvar svList = []\nvar snrList = []\nfor (let i=0; i<=11; i++) {\n    var sv = parts[3+i] || \"0\";\n    svList[i] = sv;\n    var snrIndex = parseInt(sv);\n    snrList[i] = svSNRdata[snrIndex];\n}\n\n//build the GPS status bar chart message\n\nmsg.payload=[{\n    \"series\": [\"SNR\"],\n    \"data\": [snrList],\n    \"labels\": svList \n}];\n\nreturn msg;\n\n\n/* for reference as follows\n\nmsg.payload = {\n  identifier: parts[0],\n  autoMan: parts[1],\n  fixMode: parts[2],\n  svid1: parts[3],\n  svid2: parts[4],\n  svid3: parts[5],\n  svid4: parts[6],\n  svid5: parts[7],\n  svid6: parts[8],\n  svid7: parts[9],\n  svid8: parts[10],\n  svid9: parts[11],\n  svid10: parts[12],\n  svid11: parts[13],\n  svid12: parts[14],\n  pdop: parts[15],\n  hdop: parts[16],\n  vdop: parts[17]\n  }\n  */",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 280,
+        "wires": [
+            [
+                "3c12b911fcb953c8"
+            ]
+        ]
+    },
+    {
+        "id": "d1f18380c9713791",
+        "type": "ui_group",
+        "name": "GPSDO STATUS",
+        "tab": "7cfa0acacdc9425e",
+        "order": 5,
+        "disp": false,
+        "width": "7",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "260fa66d78fbe2c2",
+        "type": "serial-port",
+        "serialport": "COM31",
+        "serialbaud": "9600",
+        "databits": "8",
+        "parity": "none",
+        "stopbits": "1",
+        "waitfor": "",
+        "dtr": "none",
+        "rts": "none",
+        "cts": "none",
+        "dsr": "none",
+        "newline": "\\n",
+        "bin": "false",
+        "out": "char",
+        "addchar": "",
+        "responsetimeout": "10000"
+    },
+    {
+        "id": "7cfa0acacdc9425e",
+        "type": "ui_tab",
+        "name": "STATION CONTROLLER MAIN",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]
